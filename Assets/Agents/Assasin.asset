@@ -1,0 +1,38 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8fbd042cb739bb74baca71b50a5ba15a, type: 3}
+  m_Name: Assasin
+  m_EditorClassIdentifier: Assembly-CSharp::AgentData
+  agentName: Violet
+  description: "Y\u0131llar\u0131n en b\xFCy\xFCk assasinlerinden biri her t\xFCrl\xFC
+    hedefi assasinledi. Peki neden burada , \u015Fey kendisi biraz duygusal ..."
+  faceIcon: {fileID: -6706149430936478094, guid: 1c8a9a87713c21b4ca1688f431aa3daf, type: 3}
+  currentXP: 0
+  xpToNextLevel: 100
+  skills:
+  - type: 0
+    value: 1
+  - type: 1
+    value: 4
+  - type: 2
+    value: 5
+  - type: 3
+    value: 2
+  - type: 4
+    value: 4
+  - type: 5
+    value: 4
+  weakness: "A\u011Flamak,Bolca A\u011Flamak ve Eski sevgilisinden gelen telefon"
+  funnyFailQuotes:
+  - "Bu hedef fazla iyiydi can\u0131n ba\u011F\u0131\u015Flanmas\u0131n\u0131 haketti
+    izninle a\u011Flama k\xF6\u015Feme gidiyorum"
+  - "AHHHH NASIL KA\xC7TIN EL\u0130MDEN!!!!!"

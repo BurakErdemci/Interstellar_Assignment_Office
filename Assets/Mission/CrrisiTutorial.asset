@@ -1,0 +1,38 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f0a51c81ba1f0e3408a40b5267ef9460, type: 3}
+  m_Name: CrrisiTutorial
+  m_EditorClassIdentifier: Assembly-CSharp::MissionData
+  missionTitle: Yan Daire Krizi
+  missionBrief: "M\xFC\u015Fteri panik halinde arad\u0131. Kar\u015F\u0131 kom\u015Fusundan
+    silah sesleri ve \xE7\u0131\u011Fl\u0131klar geldi\u011Fini s\xF6yl\xFCyor. M\xFC\u015Fteri
+    sigortal\u0131 ama kom\u015Funun durumu me\xE7hul."
+  type: 1
+  requirements:
+  - stat: 2
+    minLevel: 2
+  - stat: 1
+    minLevel: 2
+  difficultyLevel: 60
+  successText: 
+  failText: 
+  optionATitle: "M\xDCDAHALE ET"
+  optionADesc: "(Kahraman Modu)\\n\\nRisk: Y\xDCKSEK\\n\xD6d\xFCl: XP + \u0130tibar\\n\\nKom\u015Funun
+    evine gizlice gir ve sald\u0131rgan\u0131 etkisiz hale getir. Dikkatli ol, sigortas\u0131z
+    i\u015Flem yapt\u0131\u011F\u0131n i\xE7in ceza yiyebilirsin."
+  optionAGame: 1
+  optionBTitle: SADECE KORU
+  optionBDesc: DefenseMode
+  optionBGame: 2
+  specificAgent: {fileID: 0}
+  interactionType: 0
+  specialSuccessText: 

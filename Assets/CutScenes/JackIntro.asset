@@ -1,0 +1,58 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 14b3fdba251a61a4998a499bcd934278, type: 3}
+  m_Name: JackIntro
+  m_EditorClassIdentifier: Assembly-CSharp::CutsceneData
+  backgroundMusic: {fileID: 8300000, guid: 649e90363eb6a2e488a8d00a6173ade7, type: 3}
+  panels:
+  - image: {fileID: -7244093059430438775, guid: bd016f63d0c6fe243ae9e2c965c73521, type: 3}
+    text: "10 y\u0131l... Bir hi\xE7 u\u011Fruna ya\u011Fmurda bekledi\u011Fim 10
+      y\u0131l."
+    soundEffect: {fileID: 0}
+    speaker: 0
+  - image: {fileID: -5453799318760675382, guid: 3f9a37d52ba1ae648bce3852b5444fd3, type: 3}
+    text: "Eve d\xF6nmek istedim. Ama Lokiworld... evim art\u0131k bir mezarl\u0131kt\u0131."
+    soundEffect: {fileID: 0}
+    speaker: 0
+  - image: {fileID: 3129370254906604291, guid: 980e81cd6d2b9de4c993126d16c82995, type: 3}
+    text: "Spaceworld'\xFCn en ucuz bar\u0131nda, son param\u0131 zehire yat\u0131rd\u0131m."
+    soundEffect: {fileID: 0}
+    speaker: 0
+  - image: {fileID: -4769503426150032792, guid: bb625606423973545976675d610964aa, type: 3}
+    text: "San\u0131r\u0131m karaci\u011Ferim iflas etti. Masadaki f\u0131st\u0131k
+      bana el sall\u0131yordu."
+    soundEffect: {fileID: 0}
+    speaker: 0
+  - image: {fileID: -4769503426150032792, guid: bb625606423973545976675d610964aa, type: 3}
+    text: "Hey, koca adam! O biray\u0131 i\xE7meyeceksen ben y\xFCzebilir miyim i\xE7inde?"
+    soundEffect: {fileID: 0}
+    speaker: 1
+  - image: {fileID: 7418641446168068062, guid: 7035488fbb1bdad4aa21585c5610e731, type: 3}
+    text: "Ses tonu... bozuk bir radyo gibiydi. Ama g\xF6zlerinde garip bir \xF6zg\xFCven
+      vard\u0131."
+    soundEffect: {fileID: 0}
+    speaker: 0
+  - image: {fileID: -6574893443067878316, guid: 229216e31f0487041ac0f254a376bfd4, type: 3}
+    text: "Sende potansiyel var. T\xFCkenmi\u015Flik sendromu, umutsuzluk... Tam
+      bizim \u015Firketin arad\u0131\u011F\u0131 profil. Ad\u0131m Tiny. Patronun
+      olaca\u011F\u0131m"
+    soundEffect: {fileID: 0}
+    speaker: 1
+  - image: {fileID: 5470931943617588354, guid: a881a4227c510f74d8cea35281fcd7b6, type: 3}
+    text: "Neden bilmiyorum ama... o k\xFC\xE7\xFCk mavi ele uzand\u0131m."
+    soundEffect: {fileID: 0}
+    speaker: 0
+  - image: {fileID: 1518384666275855854, guid: d4f46c4a23b1bf94f99f7633dd906a02, type: 3}
+    text: "Hayat\u0131m\u0131n en b\xFCy\xFCk hatas\u0131n\u0131 yapmak \xFCzereydim..."
+    soundEffect: {fileID: 0}
+    speaker: 0
+  nextSceneName: MissionScene

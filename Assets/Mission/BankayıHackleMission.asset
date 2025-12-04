@@ -1,0 +1,38 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f0a51c81ba1f0e3408a40b5267ef9460, type: 3}
+  m_Name: "Bankay\u0131HackleMission"
+  m_EditorClassIdentifier: Assembly-CSharp::MissionData
+  missionTitle: "Bankan\u0131n Yaz\u0131l\u0131m\u0131n\u0131 Hackle"
+  missionBrief: "Bankan\u0131n m\xFChendisleri o kadar iyi ki kendi sistemlerini
+    hackleyen bir sistem olu\u015Fturmu\u015Flar ve bu sistemi geri hackleyemiyolar.
+    Bu sistemi hackleyecek birisi laz\u0131m"
+  type: 0
+  requirements:
+  - stat: 0
+    minLevel: 4
+  - stat: 3
+    minLevel: 3
+  difficultyLevel: 70
+  successText: "Hacker\u0131 hackledin tebrikler. Banka m\xFCd\xFCr\xFC sana i\u015F
+    teklif ediyor."
+  failText: "Sistemi hackleyen sistem konsoluna bir mesaj g\xF6nderdi : \"  :*(  
+    \""
+  optionATitle: 
+  optionADesc: 
+  optionAGame: 0
+  optionBTitle: 
+  optionBDesc: 
+  optionBGame: 0
+  specificAgent: {fileID: 0}
+  interactionType: 0
+  specialSuccessText: 

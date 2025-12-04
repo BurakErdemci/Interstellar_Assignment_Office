@@ -1,0 +1,37 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f0a51c81ba1f0e3408a40b5267ef9460, type: 3}
+  m_Name: KediyiKurtarMission
+  m_EditorClassIdentifier: Assembly-CSharp::MissionData
+  missionTitle: "Kediyi A\u011Fa\xE7tan \u0130ndir"
+  missionBrief: "Ya\u015Fl\u0131 teyzenin kedisi a\u011Fa\xE7ta kald\u0131. Mahalleli
+    panik i\xE7inde."
+  type: 0
+  requirements:
+  - stat: 1
+    minLevel: 3
+  - stat: 5
+    minLevel: 2
+  difficultyLevel: 30
+  successText: "A\u011Fac\u0131 k\xF6k\xFCnden s\xF6k\xFCp yere yat\u0131rd\u0131n.
+    Kedi art\u0131k yerde. Teyze \u015Fokta ama mutlu"
+  failText: "A\u011Faca kafa att\u0131n ama kedi kafana d\xFC\u015Ft\xFC ve seni
+    t\u0131rmalad\u0131."
+  optionATitle: 
+  optionADesc: 
+  optionAGame: 0
+  optionBTitle: 
+  optionBDesc: 
+  optionBGame: 0
+  specificAgent: {fileID: 0}
+  interactionType: 0
+  specialSuccessText: 

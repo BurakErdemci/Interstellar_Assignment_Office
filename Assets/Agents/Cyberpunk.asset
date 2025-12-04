@@ -1,0 +1,37 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8fbd042cb739bb74baca71b50a5ba15a, type: 3}
+  m_Name: Cyberpunk
+  m_EditorClassIdentifier: Assembly-CSharp::AgentData
+  agentName: Kenvi
+  description: "Kendisi bir Cyberpunk fanboy l\xFCtfen onu yarg\u0131lamay\u0131n"
+  faceIcon: {fileID: -7339009845322139880, guid: 5f74bba386d4f504f9ddcaf78c4cd6c8, type: 3}
+  currentXP: 20
+  xpToNextLevel: 100
+  skills:
+  - type: 0
+    value: 5
+  - type: 1
+    value: 4
+  - type: 2
+    value: 1
+  - type: 3
+    value: 1
+  - type: 4
+    value: 3
+  - type: 5
+    value: 2
+  weakness: "K\u0131rsallar ve Ormanl\u0131k Alanlar, Teknoloji Ba\u011F\u0131ml\u0131l\u0131\u011F\u0131(cyberpunk
+    olan)"
+  funnyFailQuotes:
+  - "Wake the fuck up... bekle ba\u015Faramad\u0131m m\u0131 g\xF6revi ??"
+  - "Cyberpunk tanr\u0131lar\u0131 beni affedin ..."

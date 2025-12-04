@@ -1,0 +1,39 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f0a51c81ba1f0e3408a40b5267ef9460, type: 3}
+  m_Name: NewMission
+  m_EditorClassIdentifier: Assembly-CSharp::MissionData
+  missionTitle: Hedefi Takip Et
+  missionBrief: "Hedef \u015F\xFCpheli bir kafeye girdi. Biri i\xE7eri s\u0131z\u0131p
+    dinlemeli."
+  type: 0
+  requirements:
+  - stat: 2
+    minLevel: 2
+  - stat: 5
+    minLevel: 2
+  difficultyLevel: 40
+  successText: "Gizlice dinledik, bilgileri ald\u0131k."
+  failText: "Garsona \xE7arp\u0131p tepsiyi devirdin"
+  optionATitle: 
+  optionADesc: 
+  optionAGame: 0
+  optionBTitle: 
+  optionBDesc: 
+  optionBGame: 0
+  specificAgent: {fileID: 11400000, guid: b0ae23452c8763f4aa65a4a0121c6e34, type: 2}
+  interactionType: 0
+  specialSuccessText: "\"\u0130\xE7eri girdi\u011Fimde hedef ki\u015Finin ESK\u0130
+    N\u0130\u015EANLIM oldu\u011Funu g\xF6rd\xFCm! G\xF6revi unuttum, masas\u0131na
+    oturdum ve 3 saat boyunca ili\u015Fkimizdeki sorunlar\u0131 tart\u0131\u015Ft\u0131k.
+    Sonunda bar\u0131\u015Ft\u0131k ama hedef ka\xE7t\u0131. (Ama duygusal olarak
+    kazand\u0131k!)\"\n"
