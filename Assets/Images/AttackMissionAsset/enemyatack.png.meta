@@ -119,37 +119,15 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: enemyatack_0
-      rect:
-        serializedVersion: 2
-        x: 368
-        y: 405
-        width: 113
-        height: 194
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 0b50e5ce42a5f71b0800000000000000
-      internalID: -5656703492323146320
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
       name: enemyatack_1
       rect:
         serializedVersion: 2
-        x: 397
-        y: 145
-        width: 374
-        height: 314
+        x: 426
+        y: 0
+        width: 1833
+        height: 1324
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -166,12 +144,12 @@ TextureImporter:
       name: enemyatack_2
       rect:
         serializedVersion: 2
-        x: 457
+        x: 424
         y: 0
-        width: 1690
+        width: 1765
         height: 1327
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -188,7 +166,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID: 3f0a137d78c5b024aa3b6a2fb0a9d7ca
     internalID: 0
     vertices: []
     indices: 

@@ -30,10 +30,8 @@ MonoBehaviour:
   optionBTitle: 
   optionBDesc: 
   optionBGame: 0
-  specificAgent: {fileID: 11400000, guid: b0ae23452c8763f4aa65a4a0121c6e34, type: 2}
+  specificAgent: {fileID: 0}
   interactionType: 0
-  specialSuccessText: "\"\u0130\xE7eri girdi\u011Fimde hedef ki\u015Finin ESK\u0130
-    N\u0130\u015EANLIM oldu\u011Funu g\xF6rd\xFCm! G\xF6revi unuttum, masas\u0131na
-    oturdum ve 3 saat boyunca ili\u015Fkimizdeki sorunlar\u0131 tart\u0131\u015Ft\u0131k.
-    Sonunda bar\u0131\u015Ft\u0131k ama hedef ka\xE7t\u0131. (Ama duygusal olarak
-    kazand\u0131k!)\"\n"
+  specialSuccessText: '
+
+'

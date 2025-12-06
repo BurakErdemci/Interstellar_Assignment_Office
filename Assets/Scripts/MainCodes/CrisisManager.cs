@@ -2,13 +2,14 @@ using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
 using DG.Tweening;
+using UnityEngine.SceneManagement;
 
 public class CrisisManager : MonoBehaviour
 {
     public static CrisisManager Instance;
 
     [Header("UI References")]
-    public GameObject crisisPanel; // Tüm paneli açıp kapatmak için
+    public GameObject crisisPanel; 
     public TextMeshProUGUI titleText;
     public TextMeshProUGUI descriptionText;
 
@@ -23,31 +24,32 @@ public class CrisisManager : MonoBehaviour
     public Button btnOptionB;
 
     private MissionData currentMission;
+    private AgentData currentAgent;
 
-    private void Awake()
-    {
-        Instance = this;
-    }
+    private void Awake() { Instance = this; }
 
     private void Start()
     {
-        crisisPanel.SetActive(false); // Başlangıçta gizle
+        crisisPanel.SetActive(false); 
     }
 
-    // MapManager buradan çağıracak
-    public void StartCrisis(MissionData mission)
+    // MapManager buradan çağıracak (Ajan parametresi EKLENDİ)
+    public void StartCrisis(MissionData mission, AgentData agent)
     {
         currentMission = mission;
+        currentAgent = agent;
+        
         crisisPanel.SetActive(true);
         CanvasGroup group = crisisPanel.GetComponent<CanvasGroup>();
         if (group == null) group = crisisPanel.AddComponent<CanvasGroup>();
-        group.alpha = 0; // Görünmez başla
-        group.DOFade(1, 0.5f); // Yarım saniyede görünür ol
+        
+        group.alpha = 0; 
+        group.DOFade(1, 0.5f); 
         crisisPanel.transform.DOShakePosition(1f, 10f, 10, 90);
 
         // Metinleri Doldur
         titleText.text = "KRİTİK DURUM: " + mission.missionTitle;
-        descriptionText.text = mission.missionBrief; // "Komşudan silah sesleri geliyor..."
+        descriptionText.text = mission.missionBrief; 
 
         // Seçenek A
         textOptionA_Title.text = mission.optionATitle;
@@ -69,18 +71,23 @@ public class CrisisManager : MonoBehaviour
     {
         // Seçim yapıldı, Dilemma ekranını kapat
         crisisPanel.SetActive(false);
-
-        // Hangi oyun seçildiyse onu başlat
+        
+        // Veriyi kaydet ki Minigame'den dönünce hatırlayalım
+        GameSession.SaveSessionForMinigame(currentMission, currentAgent);
         switch (gameType)
         {
             case MinigameType.AttackMode:
-                Debug.Log("SALDIRI MİNİGAME BAŞLATILIYOR (Tuşlara Bas!)");
-                // StartAttackGame(); -> Yarın burayı yazacağız
+                Debug.Log("Saldırı Sahnesi Yükleniyor...");
+                SceneManager.LoadScene("AttackGameScene"); 
                 break;
 
             case MinigameType.DefenseMode:
-                Debug.Log("SAVUNMA MİNİGAME BAŞLATILIYOR (Sessiz Ol!)");
-                // StartDefenseGame(); -> Yarın burayı yazacağız
+                Debug.Log("Savunma Sahnesi Yükleniyor...");
+                SceneManager.LoadScene("DefenseGameScene");
+                break;
+                
+            case MinigameType.None:
+                Debug.Log("Minigame yok, direkt devam et.");
                 break;
         }
     }

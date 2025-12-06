@@ -3,42 +3,54 @@ using UnityEngine.UI;
 using TMPro;
 using System.Collections;
 using System.Collections.Generic;
-using DG.Tweening; // DOTween kütüphanesini unutma!
+using DG.Tweening;
+using UnityEngine.SceneManagement;
 
 public class MinigameCombatManager : MonoBehaviour
 {
     public enum TurnState { PlayerTurn, EnemyTurn }
+    public enum NoteType { Normal, Wavy, Turbo, Ghost, Bomb } // YENİ: Nota Davranışları
 
     [Header("Rhythm UI References")]
-    public RectTransform trackContainer; // Notaların kayacağı şerit
-    public RectTransform spawnPoint;     // Doğuş noktası (Sağ)
-    public RectTransform targetZone;     // Hedef noktası (Sol)
+    public RectTransform trackContainer;
+    public RectTransform spawnPoint;
+    public RectTransform targetZone;
     public GameObject keyPrefab;
     public TextMeshProUGUI feedbackText;
+    public CanvasGroup uiCanvasGroup; // Tüm UI'ı şeffaflaştırmak için (Ghost notalar için)
+
+    [Header("Audio Settings (YENİ)")]
+    public AudioSource musicSource;    // Arka plan müziği
+    public AudioSource sfxSource;      // Efektler
+    public AudioClip bgMusic;          // Müzik dosyası
+    public AudioClip hitSound;         // Vuruş sesi
+    public AudioClip missSound;        // Kaçırma/Hasar sesi
+    public AudioClip bombSound;        // Bomba patlama sesi
+
+    [Header("Juice")]
+    public GameObject explosionPrefab;
+    public float hitStopDuration = 0.1f;
 
     [Header("Health UI")]
     public Slider playerHealthBar;
     public Slider enemyHealthBar;
 
-    [Header("Phase Settings")]
-    public float baseNoteSpeed = 400f;   
-    public float speedIncreasePerTurn = 50f; 
-    public int notesPerTurn = 5;         
-    
-    [Header("Hit Windows (Zorluk)")]
-    public float perfectDistance = 30f;  // Biraz artırdım, daha kolay olsun
+    [Header("Settings")]
+    public float baseNoteSpeed = 400f;
+    public float speedIncreasePerTurn = 50f;
+    public int notesPerTurn = 5;
+    public float perfectDistance = 30f;
     public float goodDistance = 80f;
 
-    [Header("Damage Settings")]
-    public int damagePerPhase = 25; // Başarılı saldırı hasarı
-    public int penaltyDamage = 20;  // Başarısız savunma hasarı
+    [Header("Damage")]
+    public int damagePerPhase = 25;
+    public int penaltyDamage = 20;
 
-    // Canlar
+    // Durumlar
     private int currentPlayerHP = 100;
     private int currentEnemyHP = 100;
     private TurnState currentTurn;
     
-    // Değişkenler
     private float currentNoteSpeed;
     private int successfulHitsInTurn = 0;
     private int phaseCount = 0; 
@@ -48,7 +60,13 @@ public class MinigameCombatManager : MonoBehaviour
         public GameObject obj;
         public RectTransform rect;
         public KeyCode key;
+        public NoteType type;      // Notanın tipi ne?
+        public CanvasGroup cg;     // Görünmezlik (Ghost) için
+        public Image img;          // Renk değişimi (Bomb) için
+        public Vector2 startPos;   // Dalgalı hareket için başlangıç Y'si
+        public float timeAlive;    // Ne kadar süredir hayatta?
     }
+
     private List<ActiveNote> activeNotes = new List<ActiveNote>();
     private List<KeyCode> possibleKeys = new List<KeyCode> { KeyCode.W, KeyCode.A, KeyCode.S, KeyCode.D };
     
@@ -58,11 +76,17 @@ public class MinigameCombatManager : MonoBehaviour
 
     private void Start()
     {
-        // Başlangıç Ayarları
+        // Müzik Başlat
+        if (musicSource != null && bgMusic != null)
+        {
+            musicSource.clip = bgMusic;
+            musicSource.loop = true;
+            musicSource.Play();
+        }
+
         playerHealthBar.maxValue = 100;
         enemyHealthBar.maxValue = 100;
-        playerHealthBar.value = 100;
-        enemyHealthBar.value = 100;
+        UpdateHealthUI();
 
         currentNoteSpeed = baseNoteSpeed;
         phaseCount = 0;
@@ -75,40 +99,26 @@ public class MinigameCombatManager : MonoBehaviour
         currentTurn = state;
         isGameActive = false;
         
-        // Temizlik
         foreach (var note in activeNotes) { if(note.obj) Destroy(note.obj); }
         activeNotes.Clear();
         
         notesSpawnedInTurn = 0;
         notesProcessedInTurn = 0;
         successfulHitsInTurn = 0;
-
-        // Zorluk Artışı
         currentNoteSpeed = baseNoteSpeed + (phaseCount * speedIncreasePerTurn);
         
-        // UI Bilgilendirme
-        if (state == TurnState.PlayerTurn)
-        {
-            feedbackText.text = $"SALDIRI HAZIRLIĞI! (Hız: {phaseCount+1})";
-            feedbackText.color = Color.cyan;
-        }
-        else
-        {
-            feedbackText.text = $"SAVUNMAYA GEÇ! (Hız: {phaseCount+1})";
-            feedbackText.color = Color.red;
-        }
+        string turnName = state == TurnState.PlayerTurn ? "SALDIRI" : "SAVUNMA";
+        feedbackText.text = $"{turnName}! (Zorluk: {phaseCount+1})";
+        feedbackText.color = state == TurnState.PlayerTurn ? Color.cyan : Color.red;
 
         yield return new WaitForSeconds(2f);
-
         feedbackText.text = "";
         isGameActive = true;
-        
         StartCoroutine(SpawnNotesRoutine());
     }
 
     IEnumerator SpawnNotesRoutine()
     {
-        // Dinamik aralık (Hızlandıkça notalar sıklaşsın)
         float dynamicInterval = 1.5f - (phaseCount * 0.1f);
         if (dynamicInterval < 0.6f) dynamicInterval = 0.6f;
 
@@ -126,25 +136,56 @@ public class MinigameCombatManager : MonoBehaviour
         newKey.transform.position = spawnPoint.position;
         newKey.transform.localScale = Vector3.one; 
         
+        // --- TİP BELİRLEME (ZORLUK EĞRİSİ) ---
+        NoteType selectedType = NoteType.Normal;
+        
+        // Tur ilerledikçe yeni belalar açılır
+        int chance = Random.Range(0, 100);
+        if (phaseCount >= 1 && chance < 30) selectedType = NoteType.Wavy;  // 2. Turda Dalgalı gelebilir
+        if (phaseCount >= 2 && chance < 50) selectedType = NoteType.Turbo; // 3. Turda Hızlanan gelebilir
+        if (phaseCount >= 3 && chance < 70) selectedType = NoteType.Ghost; // 4. Turda Görünmez gelebilir
+        if (phaseCount >= 2 && chance > 90) selectedType = NoteType.Bomb;  // Arada bir Bomba
+
         KeyCode randomKey = possibleKeys[Random.Range(0, possibleKeys.Count)];
         
-        // Space Tuşu Özel Ayarı
-        if (randomKey == KeyCode.Space)
+        // Obje Referanslarını Al
+        var tmpText = newKey.GetComponentInChildren<TextMeshProUGUI>();
+        var rectTrans = newKey.GetComponent<RectTransform>();
+        var canvasGroup = newKey.GetComponent<CanvasGroup>();
+        if (canvasGroup == null) canvasGroup = newKey.AddComponent<CanvasGroup>();
+        var imageComp = newKey.GetComponent<Image>();
+
+        // Bomba Ayarı
+        if (selectedType == NoteType.Bomb)
         {
-            newKey.GetComponentInChildren<TextMeshProUGUI>().text = "SPACE";
-            newKey.GetComponent<RectTransform>().sizeDelta = new Vector2(200, 80); 
+            tmpText.text = "!";
+            imageComp.color = Color.red; // Kırmızı yap
+            randomKey = KeyCode.None;    // Tuşu yok, basılmamalı
         }
         else
         {
-            newKey.GetComponentInChildren<TextMeshProUGUI>().text = randomKey.ToString();
-            newKey.GetComponent<RectTransform>().sizeDelta = new Vector2(80, 80);
+            if (randomKey == KeyCode.Space)
+            {
+                tmpText.text = "SPACE";
+                rectTrans.sizeDelta = new Vector2(200, 80); 
+            }
+            else
+            {
+                tmpText.text = randomKey.ToString();
+                rectTrans.sizeDelta = new Vector2(80, 80);
+            }
         }
 
         ActiveNote noteData = new ActiveNote
         {
             obj = newKey,
-            rect = newKey.GetComponent<RectTransform>(),
-            key = randomKey
+            rect = rectTrans,
+            key = randomKey,
+            type = selectedType,
+            cg = canvasGroup,
+            img = imageComp,
+            startPos = rectTrans.anchoredPosition,
+            timeAlive = 0f
         };
         
         activeNotes.Add(noteData);
@@ -154,64 +195,170 @@ public class MinigameCombatManager : MonoBehaviour
     {
         if (!isGameActive) return;
 
-        // --- 1. NOTALARI HAREKET ETTİR VE KAÇIRMA KONTROLÜ ---
         for (int i = activeNotes.Count - 1; i >= 0; i--)
         {
             ActiveNote note = activeNotes[i];
-            
-            // Sola doğru kaydır
-            note.rect.anchoredPosition -= new Vector2(currentNoteSpeed * Time.deltaTime, 0);
+            note.timeAlive += Time.deltaTime;
 
-            // EKRANDAN ÇIKTI MI? (KAÇIRMA)
+            float moveAmount = currentNoteSpeed * Time.deltaTime;
+
+            // --- DAVRANIŞLAR (BEHAVIORS) ---
+            switch (note.type)
+            {
+                case NoteType.Normal:
+                    // Dümdüz git
+                    note.rect.anchoredPosition -= new Vector2(moveAmount, 0);
+                    break;
+
+                case NoteType.Wavy:
+                    // Yılan gibi git (Sinüs Dalgası)
+                    note.rect.anchoredPosition -= new Vector2(moveAmount, 0);
+                    float waveY = Mathf.Sin(note.timeAlive * 10f) * 50f; // 50 birim yukarı aşağı
+                    note.rect.anchoredPosition = new Vector2(note.rect.anchoredPosition.x, note.startPos.y + waveY);
+                    break;
+
+                case NoteType.Turbo:
+                    // Hedefe yaklaştıkça hızlan (Roket)
+                    float dist = Mathf.Abs(note.rect.anchoredPosition.x - targetZone.anchoredPosition.x);
+                    float speedMultiplier = (dist < 300f) ? 2.5f : 1f; // 300 birim kala 2.5 kat hızlan
+                    note.rect.anchoredPosition -= new Vector2(moveAmount * speedMultiplier, 0);
+                    break;
+
+                case NoteType.Ghost:
+                    // Yolda görünmez ol (Fade Out)
+                    note.rect.anchoredPosition -= new Vector2(moveAmount, 0);
+                    // X: 500'de başla, 0'da tamamen görünmez ol
+                    float alpha = Mathf.Clamp01(Mathf.Abs(note.rect.anchoredPosition.x - targetZone.anchoredPosition.x) / 400f);
+                    note.cg.alpha = alpha;
+                    break;
+
+                case NoteType.Bomb:
+                    // Bomba da düz gider ama kırmızıdır
+                    note.rect.anchoredPosition -= new Vector2(moveAmount, 0);
+                    // Yanıp sönme efekti
+                    float blink = Mathf.PingPong(Time.time * 10, 1);
+                    note.img.color = Color.Lerp(Color.red, Color.yellow, blink);
+                    break;
+            }
+
+            // EKRANDAN ÇIKTI MI?
             if (note.rect.anchoredPosition.x < targetZone.anchoredPosition.x - goodDistance)
             {
-                MissNote(note);          // İşlemi yap
-                activeNotes.RemoveAt(i); // Listeden sil
-                CheckTurnEnd();          // Sonra kontrol et
+                // Eğer Bombaysa ve çıkarsa -> İYİ BİR ŞEY (Patlamadı)
+                if (note.type == NoteType.Bomb)
+                {
+                    RemoveNoteSafely(note);
+                }
+                else
+                {
+                    MissNote(note);
+                    activeNotes.RemoveAt(i);
+                    CheckTurnEnd();
+                }
             }
         }
 
-        // --- 2. INPUT KONTROLÜ (Hareket döngüsünden BAĞIMSIZ olmalı) ---
+        // INPUT KONTROLÜ
         if (Input.anyKeyDown && activeNotes.Count > 0)
         {
-            // En öndeki (Target'a en yakın) notayı al
             ActiveNote targetNote = activeNotes[0];
 
-            // Oyuncunun bastığı tuş, notanın tuşu mu?
+            // BOMBA KONTROLÜ
+            if (targetNote.type == NoteType.Bomb)
+            {
+                // Herhangi bir tuşa basarsan ve en öndeki bombaysa -> GÜM!
+                 if (Mathf.Abs(targetNote.rect.anchoredPosition.x - targetZone.anchoredPosition.x) <= goodDistance)
+                 {
+                     TriggerBomb(targetNote);
+                 }
+                 return;
+            }
+
+            // NORMAL NOTA KONTROLÜ
             if (Input.GetKeyDown(targetNote.key))
             {
-                // Mesafeyi hesapla
                 float distance = Mathf.Abs(targetNote.rect.anchoredPosition.x - targetZone.anchoredPosition.x);
 
                 if (distance <= goodDistance)
                 {
-                    // Menzil içindeyse VURDU
-                    // (Critical kontrolü için perfectDistance kullanılabilir)
                     bool isCrit = distance <= perfectDistance;
                     HitNote(targetNote, isCrit); 
                 }
                 else
                 {
-                    // Erken bastı ama çok uzakta (Cezalandırabilirsin veya yok sayabilirsin)
-                    Debug.Log("Çok erken bastın!");
+                    MissNote(targetNote);
+                    activeNotes.RemoveAt(0);
+                    CheckTurnEnd();
                 }
             }
-            // Yanlış tuşa basarsa (Opsiyonel ceza eklenebilir)
+            else if (!Input.GetMouseButtonDown(0))
+            {
+                // Yanlış tuş
+                MissNote(targetNote);
+                activeNotes.RemoveAt(0);
+                CheckTurnEnd();
+            }
         }
+    }
+
+    void TriggerBomb(ActiveNote note)
+    {
+        if (sfxSource) sfxSource.PlayOneShot(bombSound);
+        
+        // Patlama efekti
+        if (explosionPrefab)
+        {
+            GameObject vfx = Instantiate(explosionPrefab, trackContainer);
+            vfx.transform.position = note.obj.transform.position;
+            vfx.transform.localScale = Vector3.one * 2f;
+            // Kırmızı patlasın
+            var main = vfx.GetComponent<ParticleSystem>().main;
+            main.startColor = Color.red;
+            Destroy(vfx, 1.5f);
+        }
+
+        feedbackText.text = "BOMBA!";
+        feedbackText.color = Color.red;
+        Camera.main.transform.DOShakePosition(0.5f, 30, 50);
+        
+        Destroy(note.obj);
+        activeNotes.Remove(note);
+        notesProcessedInTurn++;
+
+        // Direkt Hasar ve Ceza
+        DealDamageToPlayer(penaltyDamage * 2, false); // Bomba çok acıtır
+        CheckTurnEnd();
     }
 
     void HitNote(ActiveNote note, bool isCritical)
     {
+        if (sfxSource) sfxSource.PlayOneShot(hitSound);
+
+        if (explosionPrefab != null)
+        {
+            GameObject vfx = Instantiate(explosionPrefab, trackContainer); 
+            vfx.transform.position = note.obj.transform.position;
+            Vector3 pos = note.obj.transform.position;
+            pos.z -= 2f; 
+            vfx.transform.position = pos;
+            vfx.transform.localScale = Vector3.one * 2f; 
+            Destroy(vfx, 1.5f); 
+        }
+
         Destroy(note.obj);
         activeNotes.Remove(note);
         notesProcessedInTurn++;
         successfulHitsInTurn++; 
 
+        feedbackText.transform.DOKill(true);
+        feedbackText.transform.localScale = Vector3.one;
+        
         if (isCritical)
         {
             feedbackText.text = "MÜKEMMEL!";
             feedbackText.color = Color.yellow;
-            feedbackText.transform.DOPunchScale(Vector3.one * 0.3f, 0.1f);
+            feedbackText.transform.DOPunchScale(Vector3.one * 0.5f, 0.2f, 10, 1);
+            StartCoroutine(HitStopRoutine());
         }
         else
         {
@@ -225,21 +372,42 @@ public class MinigameCombatManager : MonoBehaviour
 
     void MissNote(ActiveNote note)
     {
+        if (sfxSource) sfxSource.PlayOneShot(missSound);
+
         Destroy(note.obj);
         notesProcessedInTurn++;
         
         feedbackText.text = "KAÇTI!";
         feedbackText.color = Color.red;
+        feedbackText.transform.DOShakePosition(0.5f, 10); 
 
-       
+        CheckTurnEnd();
     }
 
-    // --- TUR SONU HESAPLAMA ---
+    void RemoveNoteSafely(ActiveNote note)
+    {
+        // Bombayı pas geçince (vurmayınca) başarılı sayılırız ama skor almayız
+        // Sadece listeden silip devam ediyoruz
+        Destroy(note.obj);
+        activeNotes.Remove(note);
+        notesProcessedInTurn++;
+        CheckTurnEnd();
+    }
+
+
+    
+    IEnumerator HitStopRoutine()
+    {
+        Time.timeScale = 0f; 
+        yield return new WaitForSecondsRealtime(hitStopDuration); 
+        Time.timeScale = 1f; 
+    }
+
     void CheckTurnEnd()
     {
         if (notesProcessedInTurn >= notesPerTurn && activeNotes.Count == 0)
         {
-            isGameActive = false; // Oyunu dondur
+            isGameActive = false; 
             StartCoroutine(ResolveTurnRoutine());
         }
     }
@@ -248,20 +416,13 @@ public class MinigameCombatManager : MonoBehaviour
     {
         yield return new WaitForSeconds(0.5f);
 
-        // SALDIRI SIRASI
         if (currentTurn == TurnState.PlayerTurn)
         {
-            // 5 notanın en az 3'ünü vurdun mu?
             if (successfulHitsInTurn >= 3)
             {
                 feedbackText.text = "KOMBO TAMAMLANDI!";
                 feedbackText.color = Color.yellow;
-
-                // Sinematik Vuruş
-                CinematicAction.Instance.PlayPlayerCriticalAttack(() => 
-                {
-                    DealDamageToEnemy(damagePerPhase);
-                });
+                CinematicAction.Instance.PlayPlayerCriticalAttack(() => { DealDamageToEnemy(damagePerPhase, true); });
             }
             else
             {
@@ -271,10 +432,8 @@ public class MinigameCombatManager : MonoBehaviour
                 NextTurn();
             }
         }
-        // SAVUNMA SIRASI
         else
         {
-            // En az 3 tanesini blokladın mı?
             if (successfulHitsInTurn >= 3)
             {
                 feedbackText.text = "BLOKLADIN!";
@@ -286,46 +445,26 @@ public class MinigameCombatManager : MonoBehaviour
             {
                 feedbackText.text = "HASAR ALDIN!";
                 feedbackText.color = Color.red;
-                
-                // Düşman Sinematiği
-                CinematicAction.Instance.PlayEnemyAttack(() => 
-                {
-                    DealDamageToPlayer(penaltyDamage);
-                });
+                CinematicAction.Instance.PlayEnemyAttack(() => { DealDamageToPlayer(penaltyDamage, true); });
             }
         }
     }
 
-    void DealDamageToEnemy(int amount)
+    void DealDamageToEnemy(int amount, bool changeTurn)
     {
         currentEnemyHP -= amount;
         UpdateHealthUI();
-        
-        if (currentEnemyHP <= 0) 
-        {
-            EndGame(true);
-        }
-        else 
-        {
-            NextTurn(); // Hata buradaydı, düzeltildi
-        }
+        if (currentEnemyHP <= 0) EndGame(true);
+        else if (changeTurn) NextTurn();
     }
 
-    void DealDamageToPlayer(int amount)
+    void DealDamageToPlayer(int amount, bool changeTurn)
     {
         currentPlayerHP -= amount;
         UpdateHealthUI();
-        
         Camera.main.transform.DOShakePosition(0.5f, 15, 20);
-        
-        if (currentPlayerHP <= 0) 
-        {
-            EndGame(false);
-        }
-        else 
-        {
-            NextTurn(); // Hata buradaydı, düzeltildi
-        }
+        if (currentPlayerHP <= 0) EndGame(false);
+        else if (changeTurn) NextTurn();
     }
 
     void NextTurn()
@@ -341,12 +480,23 @@ public class MinigameCombatManager : MonoBehaviour
         StopAllCoroutines();
         feedbackText.text = playerWon ? "KAZANDIN!" : "KAYBETTİN...";
         feedbackText.color = playerWon ? Color.green : Color.red;
-        Debug.Log("Oyun Bitti: " + (playerWon ? "Zafer" : "Yenilgi"));
+        GameSession.minigameWin = playerWon;
+        GameSession.returningFromMinigame = true;
+        StartCoroutine(ReturnToMapRoutine());
     }
 
     void UpdateHealthUI()
     {
         if (playerHealthBar) playerHealthBar.value = currentPlayerHP;
         if (enemyHealthBar) enemyHealthBar.value = currentEnemyHP;
+    }
+    IEnumerator ReturnToMapRoutine()
+    {
+        // 1. Sonucu okuması için 2 saniye bekle
+        yield return new WaitForSeconds(2f);
+
+        // 2. Ana sahneyi yükle
+        // DİKKAT: "MissionScene" yerine senin ana sahnenin adı neyse onu yaz!
+        UnityEngine.SceneManagement.SceneManager.LoadScene("MissionScene");
     }
 }

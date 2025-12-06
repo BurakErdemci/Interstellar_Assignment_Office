@@ -33,6 +33,6 @@ MonoBehaviour:
   optionBTitle: SADECE KORU
   optionBDesc: DefenseMode
   optionBGame: 2
-  specificAgent: {fileID: 0}
+  specificAgent: {fileID: 11400000, guid: b0ae23452c8763f4aa65a4a0121c6e34, type: 2}
   interactionType: 0
   specialSuccessText: 

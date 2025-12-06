@@ -14,8 +14,6 @@ public class MapManager : MonoBehaviour
     public GameObject agentVisualPrefab;   
     
     private List<AgentData> busyAgents = new List<AgentData>();
-
-    // YENİ: Çark kapanana kadar bekleyecek ajanın bilgileri
     private AgentData agentWaitingToReturn;
     private Vector3 returnStartPosition;
 
@@ -52,17 +50,28 @@ public class MapManager : MonoBehaviour
     public int penaltyAmount = 100; 
     private int displayedMoney = 1000; 
 
-
     private void Awake() { Instance = this; }
 
     private void Start()
     {
+        // --- YENİ: HAFIZAYI YÜKLE ---
+        if (GameSession.isGameStarted)
+        {
+            currentMoney = GameSession.savedMoney;
+            completedMissionsToday = new List<MissionData>(GameSession.savedCompletedMissions);
+        }
+        else
+        {
+            // Oyunun en başıysa (İlk açılış), GameSession'ı başlangıç parasıyla eşle
+            GameSession.savedMoney = currentMoney;
+        }
+        // ----------------------------
+
         UpdateMoneyUI(true);
         detailPanel.SetActive(false);
 
         closeDetailButton.onClick.AddListener(() => 
         {
-            // Önce küçült (0.3 saniyede), küçülme bitince (OnComplete) kapat.
             detailPanel.transform.DOScale(0f, 0.3f).SetEase(Ease.InBack).OnComplete(() => 
             {
                 detailPanel.SetActive(false);
@@ -70,27 +79,66 @@ public class MapManager : MonoBehaviour
             });
         });
 
-        // --- ÇARKI KAPATMA BUTONU (GÜNCELLENDİ) ---
         closeWheelButton.onClick.AddListener(() => 
         {
             wheelController.CloseWheel();
             closeWheelButton.gameObject.SetActive(false);
             isInteractionLocked = false; 
             
-            // YENİ: Eğer dönüş için bekleyen bir ajan varsa, ŞİMDİ yola çıksın
             if (agentWaitingToReturn != null)
             {
                 ReturnAgentToBase(agentWaitingToReturn, returnStartPosition);
-                // Veriyi temizle ki tekrar tekrar yollamasın
                 agentWaitingToReturn = null;
             }
 
             CheckEndDayCondition();
         });
+        
+        // Minigame dönüş kontrolü
+        CheckMinigameReturn();
 
         StartCoroutine(MissionSpawnerRoutine());
     }
     
+    // Minigame'den dönüldü mü kontrol et
+    void CheckMinigameReturn()
+    {
+        if (GameSession.returningFromMinigame)
+        {
+            Debug.Log("Minigame'den dönüldü. Sonuç işleniyor...");
+
+            AgentData agent = GameSession.activeAgent;
+            bool isWin = GameSession.minigameWin;
+
+            if (isWin)
+            {
+                currentMoney += rewardAmount * 2; 
+                Debug.Log("KRİZ ÇÖZÜLDÜ! Ekstra Ödül.");
+            }
+            else
+            {
+                currentMoney -= penaltyAmount;
+                Debug.Log("KRİZ YÖNETİLEMEDİ! Ceza.");
+            }
+            UpdateMoneyUI();
+
+            if (agent != null && busyAgents.Contains(agent))
+            {
+                busyAgents.Remove(agent);
+            }
+            
+            if (agent != null)
+            {
+                ReturnAgentToBase(agent, Vector3.zero); 
+            }
+
+            // GÜNCEL PARAYI VE LİSTEYİ TEKRAR KAYDET
+            GameSession.SaveMapState(currentMoney, completedMissionsToday);
+
+            GameSession.ClearMinigameData();
+        }
+    }
+
     IEnumerator MissionSpawnerRoutine()
     {
         while (true)
@@ -111,20 +159,15 @@ public class MapManager : MonoBehaviour
 
         if (instant)
         {
-            // Oyun başında direkt yazsın
             displayedMoney = currentMoney;
             moneyText.text = "$ " + currentMoney;
         }
         else
         {
-            // DOTween ile saydır
-            // displayedMoney'den currentMoney'e, 1 saniyede say.
-            // Her adımda (OnUpdate) texti güncelle.
             DOTween.To(() => displayedMoney, x => displayedMoney = x, currentMoney, 1f)
                 .OnUpdate(() => moneyText.text = "$ " + displayedMoney)
-                .SetEase(Ease.OutExpo); // Sona doğru yavaşlasın
+                .SetEase(Ease.OutExpo);
             
-            // Efekt: Para artıyorsa yeşil, azalıyorsa kırmızı parlasın
             if(currentMoney > displayedMoney) 
                 moneyText.transform.DOPunchScale(Vector3.one * 0.2f, 0.3f);
         }
@@ -132,10 +175,6 @@ public class MapManager : MonoBehaviour
 
     public void SpawnNewMission(MissionData specificMission = null)
     {
-        // ... (Bu kısım aynı, yer kaplamaması için kısalttım, eski kodun aynısı kalacak) ...
-        // ... (Eğer istersen burayı da tekrar atarım ama değişmedi) ...
-        
-        // KISACA: Yer bulma ve spawn kodu aynen kalacak.
         List<MissionData> availablePool = new List<MissionData>();
         foreach (var mission in allMissions)
         {
@@ -182,15 +221,16 @@ public class MapManager : MonoBehaviour
 
     public void OpenDetailPanel(MapNode node)
     {
-        // ... (Bu kısım da aynı kalacak) ...
         if (isInteractionLocked) return;
         isInteractionLocked = true;
         currentSelectedNode = node;
         detailPanel.SetActive(true);
         detailPanel.transform.localScale = Vector3.zero;
         detailPanel.transform.DOScale(1f, 0.5f).SetEase(Ease.OutBack);
+        
         missionTitle.text = node.missionData.missionTitle;
         missionBrief.text = node.missionData.missionBrief;
+        
         foreach (Transform child in agentButtonContainer) Destroy(child.gameObject);
         foreach (var agent in allAgents)
         {
@@ -198,11 +238,24 @@ public class MapManager : MonoBehaviour
             Button btn = btnObj.GetComponent<Button>();
             TextMeshProUGUI txt = btnObj.GetComponentInChildren<TextMeshProUGUI>();
             txt.text = agent.agentName;
+
+            bool isRestricted = false;
+            if (node.missionData.specificAgent != null && node.missionData.specificAgent != agent)
+            {
+                isRestricted = true;
+            }
+
             if (busyAgents.Contains(agent))
             {
                 btn.interactable = false; 
                 txt.text += " (Görevde)"; 
                 txt.color = Color.red;    
+            }
+            else if (isRestricted)
+            {
+                btn.interactable = false;
+                txt.text += " (Uygun Değil)";
+                txt.color = Color.gray; 
             }
             else
             {
@@ -219,11 +272,15 @@ public class MapManager : MonoBehaviour
     void StartAgentTravelSequence(MapNode targetNode, AgentData agent)
     {
         targetNode.StopExpiration(); 
+        targetNode.SetTraveling();   
+        
         busyAgents.Add(agent);
         GameObject visualObj = Instantiate(agentVisualPrefab, mapContainer);
         visualObj.transform.localPosition = headquartersLocation.localPosition;
+        
         MapAgentVisual visualScript = visualObj.GetComponent<MapAgentVisual>();
         visualScript.Setup(agent); 
+        
         visualScript.MoveTo(targetNode.transform.localPosition, () => 
         {
             Destroy(visualObj); 
@@ -242,7 +299,6 @@ public class MapManager : MonoBehaviour
         if (activeMissionsOnMap.Contains(node.missionData)) activeMissionsOnMap.Remove(node.missionData);
         if (!completedMissionsToday.Contains(node.missionData)) completedMissionsToday.Add(node.missionData);
 
-        // Görev Pozisyonunu Kaydet
         Vector3 missionPosition = node.transform.localPosition;
 
         if (node.missionData.type == MissionType.Routine)
@@ -261,53 +317,40 @@ public class MapManager : MonoBehaviour
                 
                 Destroy(node.gameObject);
 
-                // --- GÜNCELLENEN KISIM: HEMEN YOLLAMA, BEKLET ---
-                // Eskiden: ReturnAgentToBase(...) diyorduk.
-                // Şimdi:
                 agentWaitingToReturn = agent;
                 returnStartPosition = missionPosition;
-                // Butona basınca (Start fonksiyonunda) yollayacağız.
             });
         }
         else if (node.missionData.type == MissionType.Crisis)
         {
             Destroy(node.gameObject);
-            CrisisManager.Instance.StartCrisis(node.missionData);
-            // Kriz görevlerinde ajanı ne zaman döndüreceğini CrisisManager'da yönetmen gerekir
-            // veya burada manuel olarak busyAgents.Remove(agent) yapabilirsin.
-            busyAgents.Remove(agent);
+            busyAgents.Remove(agent); 
+            
+            // --- YENİ: GİTMEDEN ÖNCE DURUMU KAYDET ---
+            if (!completedMissionsToday.Contains(node.missionData))
+            {
+                completedMissionsToday.Add(node.missionData);
+            }
+            GameSession.SaveMapState(currentMoney, completedMissionsToday);
+            // -----------------------------------------
+
+            CrisisManager.Instance.StartCrisis(node.missionData, agent);
         }
     }
 
-  
     public void OnMissionExpired(MapNode node)
     {
         Debug.Log("GÖREV SÜRESİ DOLDU! KAÇIRDIN!");
-
-        // 1. Cezayı Kes
         currentMoney -= penaltyAmount; 
         UpdateMoneyUI();
 
-        // 2. Aktif Listeden Sil (Artık haritada değil)
-        if (activeMissionsOnMap.Contains(node.missionData))
-        {
-            activeMissionsOnMap.Remove(node.missionData);
-        }
+        if (activeMissionsOnMap.Contains(node.missionData)) activeMissionsOnMap.Remove(node.missionData);
+        if (!completedMissionsToday.Contains(node.missionData)) completedMissionsToday.Add(node.missionData);
 
-        // --- DÜZELTME BURADA ---
-        // 3. "Tamamlananlar" Listesine Ekle (Kaçırılsa bile "Bitti" sayılır, tekrar gelmez)
-        if (!completedMissionsToday.Contains(node.missionData))
-        {
-            completedMissionsToday.Add(node.missionData);
-        }
-        // -----------------------
-
-        // 4. Görseli Yok Et
         Destroy(node.gameObject);
-        
-        // 5. Gün sonu kontrolü yap (Belki de bu son görevdi ve kaçırdın, gün bitmeli)
         CheckEndDayCondition();
     }
+
     void ReturnAgentToBase(AgentData agent, Vector3 startPos)
     {
         GameObject visualObj = Instantiate(agentVisualPrefab, mapContainer);

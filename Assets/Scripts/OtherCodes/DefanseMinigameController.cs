@@ -3,6 +3,7 @@ using UnityEngine.UI;
 using TMPro;
 using UnityEngine.SceneManagement;
 using DG.Tweening;
+using System.Collections;
 
 public class DefenseGameManager : MonoBehaviour
 {
@@ -233,6 +234,7 @@ void UpdateJuice()
         isGameOver = true;
         feedbackText.text = message;
         feedbackText.color = success ? Color.green : Color.red;
+    
         
         // Sesleri Sustur
         if (heartbeatSource) heartbeatSource.Stop();
@@ -250,8 +252,22 @@ void UpdateJuice()
 
         noiseSlider.transform.localPosition = sliderOriginalPos;
         if(dangerOverlay) dangerOverlay.color = new Color(1,0,0,0); // Kırmızılığı sil
+        
 
         Debug.Log("Oyun Bitti: " + message);
-        // Invoke("ReturnToMap", 2f); // İleride eklenecek
+   
+        GameSession.minigameWin = success;
+        GameSession.returningFromMinigame = true;
+
+        StartCoroutine(ReturnToMapRoutine());
+    }
+    
+    IEnumerator ReturnToMapRoutine()
+    {
+        // 1. Sonucu okuması için 2 saniye bekle
+        yield return new WaitForSeconds(2f);
+
+        // 2. Ana sahneyi yükle
+        UnityEngine.SceneManagement.SceneManager.LoadScene("MissionScene");
     }
 }

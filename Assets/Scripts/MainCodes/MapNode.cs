@@ -19,7 +19,7 @@ public class MapNode : MonoBehaviour
     public MissionData missionData; 
     private AgentData assignedAgent; 
     
-    private enum NodeState { Available, InProgress, Completed }
+    private enum NodeState { Available, InProgress,Traveling, Completed }
     private NodeState currentState = NodeState.Available;
 
     // DEĞİŞİKLİK: Artık Inspector'dan süreyi 10, 20, 30 diye elle girebilirsin.
@@ -38,6 +38,11 @@ public class MapNode : MonoBehaviour
         
         nodeButton.onClick.RemoveAllListeners();
         nodeButton.onClick.AddListener(OnNodeClicked);
+    }
+  
+    public void SetTraveling()
+    {
+        ChangeState(NodeState.Traveling);
     }
 
     void Update()
@@ -105,6 +110,7 @@ public class MapNode : MonoBehaviour
         ChangeState(NodeState.Completed);
     }
 
+  
     void ChangeState(NodeState newState)
     {
         currentState = newState;
@@ -115,11 +121,20 @@ public class MapNode : MonoBehaviour
                 timerSlider.gameObject.SetActive(false);
                 if(expiryRing != null) expiryRing.gameObject.SetActive(true);
                 break;
+
+            // --- BU KISMI EKLE ---
+            case NodeState.Traveling:
+                // Ajan yolda, sayaç durmalı, halka gizlenmeli
+                if(expiryRing != null) expiryRing.gameObject.SetActive(false);
+                break;
+            // ---------------------
+
             case NodeState.InProgress:
                 statusIcon.sprite = iconWorking;
                 timerSlider.gameObject.SetActive(true);
                 if(expiryRing != null) expiryRing.gameObject.SetActive(false);
                 break;
+
             case NodeState.Completed:
                 statusIcon.sprite = iconCheck;
                 timerSlider.gameObject.SetActive(false);
