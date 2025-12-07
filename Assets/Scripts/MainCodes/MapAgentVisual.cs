@@ -4,11 +4,12 @@ using System.Collections;
 
 public class MapAgentVisual : MonoBehaviour
 {
+    [Header("Components")]
     public Image agentIcon; 
     public float moveSpeed = 300f; 
 
     [Header("Animation Settings")]
-    public float rotationOffset = 0f;   // Bunu 0 yaparsan muhtemelen düzelir artık
+    public float rotationOffset = 0f;
     public float waddleSpeed = 15f;     
     public float waddleAmount = 10f;    
 
@@ -17,42 +18,55 @@ public class MapAgentVisual : MonoBehaviour
         StartCoroutine(MoveRoutine(targetPos, onArrival));
     }
 
-    public void Setup(AgentData data)
+ 
+    // isReturning: True ise "Dönüş", False ise "Gidiş"
+    public void Setup(AgentData data, bool isReturning)
     {
-        if(data.faceIcon != null)
-        {
+        if(data.faceIcon != null) 
             agentIcon.sprite = data.faceIcon;
+
+        string quote = "";
+
+        if (isReturning)
+        {
+            // DÖNÜYORSA: Dönüş listesinden rastgele seç
+            if (data.returnQuotes.Length > 0)
+                quote = data.GetRandomQuote(data.returnQuotes);
         }
+        else
+        {
+            // GİDİYORSA: Gidiş listesinden rastgele seç
+            if (data.travelQuotes.Length > 0)
+                quote = data.GetRandomQuote(data.travelQuotes);
+        }
+
+        // Eğer bir söz seçildiyse göster
+        if (!string.IsNullOrEmpty(quote))
+        {
+            StartCoroutine(TriggerNotification(quote, data.faceIcon));
+        }
+    }
+
+    IEnumerator TriggerNotification(string message, Sprite icon)
+    {
+        yield return new WaitForSeconds(0.5f);
+        NotificationManager.Instance.ShowMessage(message, icon);
     }
 
     IEnumerator MoveRoutine(Vector3 target, System.Action onArrival)
     {
+     
         while (Vector3.Distance(transform.localPosition, target) > 5f)
         {
-            // 1. HAREKET
             transform.localPosition = Vector3.MoveTowards(transform.localPosition, target, moveSpeed * Time.deltaTime);
 
-            // 2. YÖN VE AÇI HESAPLAMA
             Vector3 direction = (target - transform.localPosition).normalized;
             float targetAngle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
 
-            // --- YENİ EKLENEN KISIM: AYNA (FLIP) MANTIĞI ---
-            // Eğer açımız 90'dan büyükse veya -90'dan küçükse (Yani Sola/Geriye gidiyorsa)
-            // Resmi Y ekseninde ters çevir ki kafa aşağı gelmesin.
-            if (Mathf.Abs(targetAngle) > 90)
-            {
-                transform.localScale = new Vector3(1, -1, 1); // Ters çevir (Ayna)
-            }
-            else
-            {
-                transform.localScale = new Vector3(1, 1, 1); // Düzelt
-            }
-            // -----------------------------------------------
+            if (Mathf.Abs(targetAngle) > 90) transform.localScale = new Vector3(1, -1, 1);
+            else transform.localScale = new Vector3(1, 1, 1);
 
-            // 3. SALLANMA
             float waddle = Mathf.Sin(Time.time * waddleSpeed) * waddleAmount;
-
-            // 4. DÖNDÜRME
             transform.localRotation = Quaternion.Euler(0, 0, targetAngle + rotationOffset + waddle);
 
             yield return null;
@@ -60,7 +74,7 @@ public class MapAgentVisual : MonoBehaviour
 
         transform.localPosition = target;
         transform.localRotation = Quaternion.identity;
-        transform.localScale = Vector3.one; // Varınca boyutu düzelt
+        transform.localScale = Vector3.one; 
         
         onArrival?.Invoke();
     }

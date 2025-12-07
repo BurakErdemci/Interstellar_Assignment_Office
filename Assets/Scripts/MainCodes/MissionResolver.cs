@@ -20,7 +20,7 @@ public class MissionResolver : MonoBehaviour
     {
         MissionResult result = new MissionResult();
         
-        // --- 1. ÖZEL ETKİLEŞİM KONTROLÜ (Aynen Korundu) ---
+        // --- 1. ÖZEL ETKİLEŞİM KONTROLÜ ---
         if (mission.specificAgent != null && mission.specificAgent == agent)
         {
             result.isSuccess = true; 
@@ -34,7 +34,7 @@ public class MissionResolver : MonoBehaviour
             return result; 
         }
         
-        // --- 2. YENİ SİSTEM: YETERLİLİK KONTROLÜ ---
+        // --- 2.YETERLİLİK KONTROLÜ ---
         bool meetsAllRequirements = true;
         string missingStatName = "";
 

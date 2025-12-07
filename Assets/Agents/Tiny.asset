@@ -15,8 +15,21 @@ MonoBehaviour:
   agentName: Tiny
   description: "\xC7ok zeki ama 10 cm"
   faceIcon: {fileID: -4569389960118956255, guid: 626ddf540fe302244bbc507da5c9f508, type: 3}
-  currentXP: 20
+  currentXP: 60
   xpToNextLevel: 100
+  selectionQuotes:
+  - "Benden ba\u015Fkas\u0131n\u0131 nas\u0131l se\xE7ebilirsin ki ?"
+  travelQuotes:
+  - "Yolday\u0131m"
+  workingQuotes:
+  - "Cidden \u015Fifre 1234 m\xFC ?"
+  returnQuotes:
+  - "\u015Eirketi kapatman\u0131n zaman\u0131 geldi"
+  generalWorkingQuotes: []
+  specificQuotes:
+  - category: 3
+    quotes:
+    - "Y\xFCkseklik korkum var ama hallederim.\", \"Kedi bana t\u0131slad\u0131 patron!"
   skills:
   - type: 0
     value: 4

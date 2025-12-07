@@ -62,10 +62,10 @@ public class MapManager : MonoBehaviour
         }
         else
         {
-            // Oyunun en başıysa (İlk açılış), GameSession'ı başlangıç parasıyla eşle
+           
             GameSession.savedMoney = currentMoney;
         }
-        // ----------------------------
+     
 
         UpdateMoneyUI(true);
         detailPanel.SetActive(false);
@@ -100,7 +100,7 @@ public class MapManager : MonoBehaviour
         StartCoroutine(MissionSpawnerRoutine());
     }
     
-    // Minigame'den dönüldü mü kontrol et
+
     void CheckMinigameReturn()
     {
         if (GameSession.returningFromMinigame)
@@ -132,7 +132,7 @@ public class MapManager : MonoBehaviour
                 ReturnAgentToBase(agent, Vector3.zero); 
             }
 
-            // GÜNCEL PARAYI VE LİSTEYİ TEKRAR KAYDET
+           
             GameSession.SaveMapState(currentMoney, completedMissionsToday);
 
             GameSession.ClearMinigameData();
@@ -279,7 +279,7 @@ public class MapManager : MonoBehaviour
         visualObj.transform.localPosition = headquartersLocation.localPosition;
         
         MapAgentVisual visualScript = visualObj.GetComponent<MapAgentVisual>();
-        visualScript.Setup(agent); 
+        visualScript.Setup(agent,false); 
         
         visualScript.MoveTo(targetNode.transform.localPosition, () => 
         {
@@ -324,15 +324,14 @@ public class MapManager : MonoBehaviour
         else if (node.missionData.type == MissionType.Crisis)
         {
             Destroy(node.gameObject);
-            busyAgents.Remove(agent); 
-            
-            // --- YENİ: GİTMEDEN ÖNCE DURUMU KAYDET ---
+            busyAgents.Remove(agent);
+
             if (!completedMissionsToday.Contains(node.missionData))
             {
                 completedMissionsToday.Add(node.missionData);
             }
             GameSession.SaveMapState(currentMoney, completedMissionsToday);
-            // -----------------------------------------
+           
 
             CrisisManager.Instance.StartCrisis(node.missionData, agent);
         }
@@ -356,7 +355,7 @@ public class MapManager : MonoBehaviour
         GameObject visualObj = Instantiate(agentVisualPrefab, mapContainer);
         visualObj.transform.localPosition = startPos;
         MapAgentVisual visualScript = visualObj.GetComponent<MapAgentVisual>();
-        visualScript.Setup(agent);
+        visualScript.Setup(agent,true);
 
         visualScript.MoveTo(headquartersLocation.localPosition, () => 
         {

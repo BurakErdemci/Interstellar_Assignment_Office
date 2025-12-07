@@ -36,3 +36,4 @@ MonoBehaviour:
   specificAgent: {fileID: 0}
   interactionType: 0
   specialSuccessText: 
+  category: 1

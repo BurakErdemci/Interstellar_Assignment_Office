@@ -33,7 +33,7 @@ public class CrisisManager : MonoBehaviour
         crisisPanel.SetActive(false); 
     }
 
-    // MapManager buradan çağıracak (Ajan parametresi EKLENDİ)
+   
     public void StartCrisis(MissionData mission, AgentData agent)
     {
         currentMission = mission;
@@ -72,7 +72,7 @@ public class CrisisManager : MonoBehaviour
         // Seçim yapıldı, Dilemma ekranını kapat
         crisisPanel.SetActive(false);
         
-        // Veriyi kaydet ki Minigame'den dönünce hatırlayalım
+      
         GameSession.SaveSessionForMinigame(currentMission, currentAgent);
         switch (gameType)
         {

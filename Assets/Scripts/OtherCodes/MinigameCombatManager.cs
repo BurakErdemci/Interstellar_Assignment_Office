@@ -9,7 +9,7 @@ using UnityEngine.SceneManagement;
 public class MinigameCombatManager : MonoBehaviour
 {
     public enum TurnState { PlayerTurn, EnemyTurn }
-    public enum NoteType { Normal, Wavy, Turbo, Ghost, Bomb } // YENİ: Nota Davranışları
+    public enum NoteType { Normal, Wavy, Turbo, Ghost, Bomb } // Nota Davranışları
 
     [Header("Rhythm UI References")]
     public RectTransform trackContainer;
@@ -17,7 +17,7 @@ public class MinigameCombatManager : MonoBehaviour
     public RectTransform targetZone;
     public GameObject keyPrefab;
     public TextMeshProUGUI feedbackText;
-    public CanvasGroup uiCanvasGroup; // Tüm UI'ı şeffaflaştırmak için (Ghost notalar için)
+    public CanvasGroup uiCanvasGroup; // Tüm UI'ı şeffaflaştırmak için (
 
     [Header("Audio Settings (YENİ)")]
     public AudioSource musicSource;    // Arka plan müziği
@@ -496,7 +496,7 @@ public class MinigameCombatManager : MonoBehaviour
         yield return new WaitForSeconds(2f);
 
         // 2. Ana sahneyi yükle
-        // DİKKAT: "MissionScene" yerine senin ana sahnenin adı neyse onu yaz!
+      
         UnityEngine.SceneManagement.SceneManager.LoadScene("MissionScene");
     }
 }

@@ -12,7 +12,7 @@ public class DefenseGameManager : MonoBehaviour
     public Slider progressSlider;
     public TextMeshProUGUI feedbackText;
     public TextMeshProUGUI timerText;
-    public Image dangerOverlay; // YENİ: Kırmızı ekran paneli
+    public Image dangerOverlay; // Kırmızı ekran paneli
 
     [Header("Audio Settings (YENİ)")]
     public AudioSource heartbeatSource; // Kalp atışı
@@ -20,8 +20,8 @@ public class DefenseGameManager : MonoBehaviour
     public AudioSource fxSource;        // Win/Fail efektleri
     public AudioClip winClip;
     public AudioClip failClip;
-    public AudioSource backgroundMusicSource; // YENİ: Gerilim Müziği
-    public AudioSource cryingSource;          // YENİ: Ağlama Sesi
+    public AudioSource backgroundMusicSource; //  Gerilim Müziği
+    public AudioSource cryingSource;          //  Ağlama Sesi
 
     private bool hasRealizedDrama = false;
     [Header("Crying Settings")]
@@ -81,12 +81,12 @@ public class DefenseGameManager : MonoBehaviour
             backgroundMusicSource.Play();
         }
 
-        // Ağlamayı Hazırla (Ama sesini kapat)
+        
         if (cryingSource != null)
         {
             cryingSource.loop = true;
-            cryingSource.volume = 0; // Başta duyulmasın
-            cryingSource.Play();     // Çalsın ama sesi 0 olsun
+            cryingSource.volume = 0;
+            cryingSource.Play();     
         }
     }
 
@@ -157,7 +157,7 @@ public class DefenseGameManager : MonoBehaviour
         else if (currentProgress >= 100) EndGame(true, "GÖREV BAŞARILI! BİLGİLERİ ALDIN.");
     }
 
-    // --- YENİ FONKSİYON: EFEKTLERİ YÖNETME ---
+  
     
 void UpdateJuice()
     {
@@ -173,7 +173,7 @@ void UpdateJuice()
             currentPressDuration = 0f;
         }
 
-        // 1. KALP ATIŞI (Aynı kalsın)
+        // 1. KALP ATIŞI 
         if (heartbeatSource != null)
         {
             float targetVolume = (currentNoise > 20) ? (currentNoise / 100f) : 0f;
@@ -181,14 +181,14 @@ void UpdateJuice()
             heartbeatSource.pitch = 1f + (currentNoise / 100f);
         }
 
-        // 2. KAPIDAKİ SESLER (Aynı kalsın)
+        // 2. KAPIDAKİ SESLER 
         if (ambientSource != null)
         {
             float targetVol = isPressing ? 0.8f : 0f;
             ambientSource.volume = Mathf.Lerp(ambientSource.volume, targetVol, Time.deltaTime * 3f);
         }
 
-        // --- 3. AĞLAMA SESİ (GÜNCELLENDİ: "Öğrenen" Sistem) ---
+        // --- 3. AĞLAMA SESİ  ---
         if (cryingSource != null)
         {
             float targetCryVol = 0f;
@@ -208,7 +208,6 @@ void UpdateJuice()
 
             cryingSource.volume = Mathf.Lerp(cryingSource.volume, targetCryVol, Time.deltaTime * 3f);
         }
-        // -------------------------------------------------------
 
         // 4. KIRMIZI EKRAN (Aynı kalsın)
         if (dangerOverlay != null)

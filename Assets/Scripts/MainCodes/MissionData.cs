@@ -1,5 +1,5 @@
 using UnityEngine;
-using System.Collections.Generic; // Listeler için gerekli
+using System.Collections.Generic; 
 
 [CreateAssetMenu(fileName = "NewMission", menuName = "Game/Mission")]
 public class MissionData : ScriptableObject
@@ -8,8 +8,7 @@ public class MissionData : ScriptableObject
     public string missionTitle;
     [TextArea] public string missionBrief;
     public MissionType type; // Rutin mi Kriz mi?    
-
-    // --- YENİ GEREKSİNİM SİSTEMİ (Eskisi: requiredStat) ---
+    
     [System.Serializable]
     public struct Requirement
     {
@@ -39,6 +38,9 @@ public class MissionData : ScriptableObject
     public AgentData specificAgent; 
     public InteractionType interactionType; 
     [TextArea] public string specialSuccessText; 
+    
+    [Header("Context")]
+    public MissionCategory category;
 }
 
 // --- ENUMLAR ---
@@ -71,4 +73,13 @@ public enum MinigameType
     None,
     AttackMode, 
     DefenseMode 
+}
+
+public enum MissionCategory
+{
+    General,   // Genel işler (Kahve taşıma vs.)
+    Hacking,   // Teknoloji işleri
+    Combat,    // Vurdulu kırdılı işler
+    Rescue,    // Kedi/Rehine kurtarma
+    Stealth    // Gizlilik işleri
 }

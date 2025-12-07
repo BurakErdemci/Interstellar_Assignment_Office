@@ -10,7 +10,6 @@ public static class GameSession
     public static bool returningFromMinigame = false;
 
     // --- KALICI OYUN VERİLERİ (YENİ) ---
-    // Bu değişkenler sahne değişse bile silinmez (Static olduğu için)
     public static int savedMoney = 1000; 
     public static List<MissionData> savedCompletedMissions = new List<MissionData>(); 
     public static bool isGameStarted = false; // Oyunun ilk açılışı mı?
@@ -27,7 +26,6 @@ public static class GameSession
     public static void SaveMapState(int money, List<MissionData> completedList)
     {
         savedMoney = money;
-        // Listeyi kopyalayarak kaydediyoruz ki referans hatası olmasın
         savedCompletedMissions = new List<MissionData>(completedList); 
         isGameStarted = true;
     }

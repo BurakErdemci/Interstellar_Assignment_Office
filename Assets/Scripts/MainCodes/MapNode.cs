@@ -19,10 +19,9 @@ public class MapNode : MonoBehaviour
     public MissionData missionData; 
     private AgentData assignedAgent; 
     
-    private enum NodeState { Available, InProgress,Traveling, Completed }
+    private enum NodeState { Available, Traveling, InProgress, Completed }
     private NodeState currentState = NodeState.Available;
 
-    // DEĞİŞİKLİK: Artık Inspector'dan süreyi 10, 20, 30 diye elle girebilirsin.
     [Header("Settings")]
     public float timeToDisappear = 15f; 
     private float currentExpiryTimer;
@@ -39,20 +38,13 @@ public class MapNode : MonoBehaviour
         nodeButton.onClick.RemoveAllListeners();
         nodeButton.onClick.AddListener(OnNodeClicked);
     }
-  
-    public void SetTraveling()
-    {
-        ChangeState(NodeState.Traveling);
-    }
 
     void Update()
     {
-        // 1. KİLİT KONTROLÜ GERİ GELDİ
-        // Eğer MapManager kilitliyse (Panel açıksa, Çark dönüyorsa) -> SAYMA, DUR.
+        // 1. KİLİT KONTROLÜ
         if (MapManager.Instance.isInteractionLocked) return;
 
         // 2. NORMAL SAYIM
-        // Müsaitse VE Ajan yolda değilse say
         if (currentState == NodeState.Available && !agentIsIncoming)
         {
             currentExpiryTimer -= Time.deltaTime;
@@ -67,10 +59,17 @@ public class MapNode : MonoBehaviour
         }
     }
 
-    // ... (Diğer fonksiyonlar: HandleExpiration, OnNodeClicked, StartTimer, StopExpiration AYNI KALSIN) ...
-    // ... Sadece Update ve değişken kısmı değişti ...
+    public void StopExpiration()
+    {
+        agentIsIncoming = true; 
+        if(expiryRing != null) expiryRing.gameObject.SetActive(false); 
+    }
     
-    // Eksik kalmasın diye kopyalaman için diğer fonksiyonları kısaca yazıyorum:
+    public void SetTraveling()
+    {
+        ChangeState(NodeState.Traveling);
+    }
+
     void HandleExpiration()
     {
         nodeButton.interactable = false;
@@ -83,16 +82,17 @@ public class MapNode : MonoBehaviour
 
         switch (currentState)
         {
-            case NodeState.Available: MapManager.Instance.OpenDetailPanel(this); break;
-            case NodeState.InProgress: Debug.Log("Ajan çalışıyor..."); break;
-            case NodeState.Completed: MapManager.Instance.ResolveMission(this, assignedAgent); break;
+            case NodeState.Available:
+                MapManager.Instance.OpenDetailPanel(this);
+                break;
+            case NodeState.Traveling: // Yoldayken tıklanmasın
+            case NodeState.InProgress:
+                Debug.Log("Ajan çalışıyor...");
+                break;
+            case NodeState.Completed:
+                MapManager.Instance.ResolveMission(this, assignedAgent);
+                break;
         }
-    }
-
-    public void StopExpiration()
-    {
-        agentIsIncoming = true; 
-        if(expiryRing != null) expiryRing.gameObject.SetActive(false); 
     }
 
     public void StartTimer(AgentData agent)
@@ -101,16 +101,37 @@ public class MapNode : MonoBehaviour
         ChangeState(NodeState.InProgress);
         StartCoroutine(TimerRoutine());
     }
-
+    
     IEnumerator TimerRoutine()
-    {
-        float duration = 5f; 
+    { float duration = 5f; 
         float timer = 0f;
-        while (timer < duration) { timer += Time.deltaTime; timerSlider.value = timer / duration; yield return null; }
-        ChangeState(NodeState.Completed);
-    }
 
-  
+        // YENİ: Akıllı Replik Çağırma
+        if (assignedAgent != null)
+        {
+            // Ajan'a soruyoruz: "Bu görev tipi (missionData.category) için bir lafın var mı?"
+            string quote = assignedAgent.GetWorkingQuote(missionData.category);
+
+            // Eğer boş dönmediyse konuş
+            if (quote != "...")
+            {
+                yield return new WaitForSeconds(1f);
+                NotificationManager.Instance.ShowMessage(quote, assignedAgent.faceIcon);
+            }
+        }
+
+
+        // SAYAÇ DÖNGÜSÜ
+        while (timer < duration)
+        {
+            timer += Time.deltaTime;
+            timerSlider.value = timer / duration; 
+            yield return null;
+        }
+
+        ChangeState(NodeState.Completed);
+    } 
+
     void ChangeState(NodeState newState)
     {
         currentState = newState;
@@ -122,12 +143,9 @@ public class MapNode : MonoBehaviour
                 if(expiryRing != null) expiryRing.gameObject.SetActive(true);
                 break;
 
-            // --- BU KISMI EKLE ---
             case NodeState.Traveling:
-                // Ajan yolda, sayaç durmalı, halka gizlenmeli
                 if(expiryRing != null) expiryRing.gameObject.SetActive(false);
                 break;
-            // ---------------------
 
             case NodeState.InProgress:
                 statusIcon.sprite = iconWorking;

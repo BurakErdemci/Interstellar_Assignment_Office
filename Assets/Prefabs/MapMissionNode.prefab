@@ -444,6 +444,7 @@ MonoBehaviour:
   iconCheck: {fileID: 814136966691421926, guid: cb1a24df68db1c9489c1f7e55846477e, type: 3}
   iconWorking: {fileID: 750126697101244548, guid: 7d773eda049d2284a96cb18cb7bf40a6, type: 3}
   missionData: {fileID: 0}
+  timeToDisappear: 15
 --- !u!1 &4783109116045898712
 GameObject:
   m_ObjectHideFlags: 0

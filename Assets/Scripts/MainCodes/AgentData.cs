@@ -11,16 +11,32 @@ public class AgentData : ScriptableObject
     [Header("Progression")]
     public int currentXP = 0;
     public int xpToNextLevel = 100;
+    [Header("Diyaloglar (Barks)")]
+    public string[] selectionQuotes; // Seçilince ne der?
+    public string[] travelQuotes;    // Yürürken ne der?
+    public string[] workingQuotes;   // İş yaparken ne der?
+    public string[] returnQuotes;   
 
-    // YENİ STAT SİSTEMİ
+    // STAT SİSTEMİ
     [System.Serializable]
     public class Skill
     {
         public StatType type;
         [Range(0, 10)] public int value; // 0-10 arası puan
     }
+    [System.Serializable]
+    public struct ContextQuote
+    {
+        public MissionCategory category; // Hangi tür?
+        [TextArea] public string[] quotes; // O türe özel laflar
+    }
+    
+    [Header("Akıllı Replik Sistemi")]
+    public string[] generalWorkingQuotes; // Eğer özel tür bulamazsa bunu söyler (Yedek)
+    public List<ContextQuote> specificQuotes; // Özel durumlar listesi
 
-    // Artık statları buradan ekleyeceksin (Örn: Hack: 3, Speed: 5)
+
+    // Artık statları buradan eklenecek (Örn: Hack: 3, Speed: 5)
     public List<Skill> skills = new List<Skill>();
     
     // Karakter Zayıflıkları
@@ -56,10 +72,26 @@ public class AgentData : ScriptableObject
             }
         }
     }
-    [Header("Diyaloglar (Barks)")]
-    public string[] selectionQuotes; // Seçilince ne der?
-    public string[] travelQuotes;    // Yürürken ne der?
-    public string[] workingQuotes;   // İş yaparken ne der?
+    public string GetWorkingQuote(MissionCategory missionType)
+    {
+        // 1. Önce özel listeyi tara
+        foreach (var item in specificQuotes)
+        {
+            if (item.category == missionType && item.quotes.Length > 0)
+            {
+                // O kategoriye uygun lafları bulduk, içinden rastgele seç
+                return item.quotes[Random.Range(0, item.quotes.Length)];
+            }
+        }
+
+        // 2. Eğer özel laf yoksa, genel havuzdan seç (Fallback)
+        if (generalWorkingQuotes.Length > 0)
+        {
+            return generalWorkingQuotes[Random.Range(0, generalWorkingQuotes.Length)];
+        }
+
+        return "...";
+    }
 
     // Rastgele cümle seçen yardımcı fonksiyon
     public string GetRandomQuote(string[] quoteList)

@@ -32,7 +32,7 @@ public class IntroManager : MonoBehaviour
     {
         if (continueIcon) continueIcon.SetActive(false);
 
-        // Başlangıçta ekranı siyah (resmi görünmez) yapalım
+     
         comicImage.color = new Color(1, 1, 1, 0); 
 
         if (introData != null)
@@ -90,9 +90,8 @@ void ShowPanel(int index)
 
         if (isSameImage)
         {
-            // --- SENARYO 1: AYNI RESİM (YUMUŞAK GEÇİŞ) ---
-            // Ekranı karartmıyoruz, resmi değiştirmiyoruz.
-            // Sadece yazı stilini ve sesi güncelliyoruz.
+            // --- SENARYO 1: AYNI RESİM 
+           
 
             if (panel.soundEffect != null)
             {
@@ -106,13 +105,12 @@ void ShowPanel(int index)
             currentFullText = panel.text;
             StartCoroutine(TypeWriterEffect(currentFullText));
             
-            // İstersen burada zoom efektini sıfırlayabilirsin veya devam ettirebilirsin.
-            // Devam etmesi daha sinematik durur, o yüzden dokunmuyoruz.
+       
         }
         else
         {
-            // --- SENARYO 2: FARKLI RESİM (FADE GEÇİŞİ) ---
-            // Burası eski kodun aynısı
+            // --- SENARYO 2: FARKLI RESİM
+         
 
             Sequence seq = DOTween.Sequence();
 
@@ -137,7 +135,7 @@ void ShowPanel(int index)
             // C. Aç ve Zoomla
             seq.Append(comicImage.DOFade(1, 1f));
             
-            // (Burada önceki zoom tween'ini öldürüp yenisini başlatıyoruz)
+          
             comicImage.transform.DOKill(); 
             comicImage.transform.DOScale(1.1f, 10f).SetEase(Ease.Linear);
 
@@ -154,7 +152,7 @@ void ShowPanel(int index)
         switch (speaker)
         {
             case CutsceneData.SpeakerType.JackInternal:
-                // Jack artık SARI
+                // Jack SARI
                 subText.color = Color.yellow; 
                 subText.fontStyle = FontStyles.Normal;
                 break;
@@ -166,7 +164,7 @@ void ShowPanel(int index)
                 break;
 
             case CutsceneData.SpeakerType.Phone:
-                // Telefonu Beyaz yapalım ki Jack ile karışmasın
+                // Telefon Beyaz 
                 subText.color = Color.white; 
                 subText.fontStyle = FontStyles.Italic;
                 break;
