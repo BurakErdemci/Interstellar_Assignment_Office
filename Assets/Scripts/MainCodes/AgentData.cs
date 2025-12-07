@@ -49,12 +49,22 @@ public class AgentData : ScriptableObject
         if (currentXP >= xpToNextLevel)
         {
             currentXP -= xpToNextLevel;
-            // Burada rastgele bir yeteneğini 1 puan artırıyoruz
             if (skills.Count > 0)
             {
                 var randomSkill = skills[Random.Range(0, skills.Count)];
                 if (randomSkill.value < 10) randomSkill.value++;
             }
         }
+    }
+    [Header("Diyaloglar (Barks)")]
+    public string[] selectionQuotes; // Seçilince ne der?
+    public string[] travelQuotes;    // Yürürken ne der?
+    public string[] workingQuotes;   // İş yaparken ne der?
+
+    // Rastgele cümle seçen yardımcı fonksiyon
+    public string GetRandomQuote(string[] quoteList)
+    {
+        if (quoteList.Length == 0) return "...";
+        return quoteList[Random.Range(0, quoteList.Length)];
     }
 }
