@@ -49,12 +49,15 @@ public class MapManager : MonoBehaviour
     public int rewardAmount = 200;  
     public int penaltyAmount = 100; 
     private int displayedMoney = 1000; 
+    
+    [Header("Level System")]
+    public LevelData currentLevelData;
 
     private void Awake() { Instance = this; }
 
     private void Start()
     {
-        // --- YENİ: HAFIZAYI YÜKLE ---
+        // 1. Hafızayı Yükle
         if (GameSession.isGameStarted)
         {
             currentMoney = GameSession.savedMoney;
@@ -62,14 +65,14 @@ public class MapManager : MonoBehaviour
         }
         else
         {
-           
             GameSession.savedMoney = currentMoney;
         }
-     
 
+        // 2. UI Hazırlığı
         UpdateMoneyUI(true);
         detailPanel.SetActive(false);
 
+        // 3. Butonları Bağla
         closeDetailButton.onClick.AddListener(() => 
         {
             detailPanel.transform.DOScale(0f, 0.3f).SetEase(Ease.InBack).OnComplete(() => 
@@ -94,13 +97,21 @@ public class MapManager : MonoBehaviour
             CheckEndDayCondition();
         });
         
-        // Minigame dönüş kontrolü
+        // 4. Minigame Dönüş Kontrolü
         CheckMinigameReturn();
 
-        StartCoroutine(MissionSpawnerRoutine());
+        // 5. Oyun Akışını Başlat (Eğer Level Data varsa senaryoyu oynat, yoksa rastgele)
+        if (currentLevelData != null)
+        {
+            StartCoroutine(PlayLevelRoutine());
+        }
+        else
+        {
+            StartCoroutine(MissionSpawnerRoutine());
+        }
     }
     
-
+    // --- BU FONKSİYON ARTIK DIŞARIDA (DOĞRUSU BU) ---
     void CheckMinigameReturn()
     {
         if (GameSession.returningFromMinigame)
@@ -132,14 +143,12 @@ public class MapManager : MonoBehaviour
                 ReturnAgentToBase(agent, Vector3.zero); 
             }
 
-           
             GameSession.SaveMapState(currentMoney, completedMissionsToday);
-
             GameSession.ClearMinigameData();
         }
     }
 
-    IEnumerator MissionSpawnerRoutine()
+    IEnumerator MissionSpawnerRoutine() // Yedek Rastgele Sistem
     {
         while (true)
         {
@@ -153,6 +162,70 @@ public class MapManager : MonoBehaviour
         }
     }
 
+    // --- SENARYO OYNATICISI ---
+   IEnumerator PlayLevelRoutine()
+    {
+        if (currentLevelData == null)
+        {
+            Debug.LogError("HATA: Level Data atanmamış!");
+            yield break;
+        }
+
+        foreach (var evt in currentLevelData.timeline)
+        {
+            // --- 1. ZAMANLAMA ÇÖZÜMÜ ---
+            if (evt.waitDuration > 0)
+            {
+                yield return new WaitForSeconds(evt.waitDuration);
+            }
+            
+            yield return new WaitWhile(() => isInteractionLocked);
+
+
+            // --- 2. OLAYLARI OYNAT ---
+            switch (evt.eventType)
+            {
+                case LevelEventType.Wait:
+               
+                    break;
+
+                case LevelEventType.SpawnMission:
+                    SpawnNewMission(evt.mission); 
+                    break;
+
+                case LevelEventType.StartDialogue:
+                    bool dialogueFinished = false;
+                    DialogueManager.Instance.StartDialogue(evt.dialogue, () => { dialogueFinished = true; });
+                    yield return new WaitUntil(() => dialogueFinished);
+                    break;
+                
+                case LevelEventType.EndDay:
+                    Debug.Log("GÜNÜN SENARYOSU BİTTİ!");
+                    yield break; 
+
+                case LevelEventType.TriggerBanter:
+                    // --- BANTER (LAF ATMA) MANTIĞI ---
+                    AgentData speaker = evt.banterAgent;
+                    string text = evt.banterText;
+                    Sprite icon = null;
+
+                    // Eğer asıl konuşmacı MEŞGULSE ve yedek varsa -> Yedeğe geç
+                    if (busyAgents.Contains(evt.banterAgent) && evt.altBanterAgent != null)
+                    {
+                        speaker = evt.altBanterAgent;
+                        text = evt.altBanterText;
+                    }
+
+                    // Konuşacak biri varsa (veya yedek devreye girdiyse)
+                    if (speaker != null)
+                    {
+                        icon = speaker.faceIcon;
+                        NotificationManager.Instance.ShowMessage(text, icon);
+                    }
+                    break;
+            }
+        }
+    }
     void UpdateMoneyUI(bool instant = false)
     {
         if (moneyText == null) return;
@@ -175,24 +248,39 @@ public class MapManager : MonoBehaviour
 
     public void SpawnNewMission(MissionData specificMission = null)
     {
+        // 1. Uygun Görev Havuzu Oluştur
         List<MissionData> availablePool = new List<MissionData>();
-        foreach (var mission in allMissions)
+
+        if (specificMission != null)
         {
-            if (!activeMissionsOnMap.Contains(mission) && !completedMissionsToday.Contains(mission))
+            // Eğer senaryodan özel görev geldiyse onu kullan (Listede olsa bile)
+            availablePool.Add(specificMission);
+        }
+        else
+        {
+            // Rastgele moddaysa, haritada olmayan ve bitmemişleri seç
+            foreach (var mission in allMissions)
             {
-                availablePool.Add(mission);
+                if (!activeMissionsOnMap.Contains(mission) && !completedMissionsToday.Contains(mission))
+                {
+                    availablePool.Add(mission);
+                }
             }
         }
+
         if (availablePool.Count == 0) return;
 
+        // 2. Yer Bul
         Vector3 spawnPos = Vector3.zero;
         bool validPositionFound = false;
         int attempts = 0;
+
         while (!validPositionFound && attempts < 20)
         {
             float x = Random.Range(-350f, 350f); 
             float y = Random.Range(-200f, 200f);
             Vector3 potentialPos = new Vector3(x, y, 0);
+
             bool tooClose = false;
             foreach (Transform child in mapContainer)
             {
@@ -209,11 +297,15 @@ public class MapManager : MonoBehaviour
             }
             attempts++;
         }
+
         if (validPositionFound)
         {
             GameObject obj = Instantiate(nodePrefab, mapContainer);
             obj.transform.localPosition = spawnPos;
+
+            // Havuzdan (veya özelden) seç
             MissionData missionToAssign = availablePool[Random.Range(0, availablePool.Count)];
+
             obj.GetComponent<MapNode>().Setup(missionToAssign);
             activeMissionsOnMap.Add(missionToAssign);
         }
@@ -279,7 +371,7 @@ public class MapManager : MonoBehaviour
         visualObj.transform.localPosition = headquartersLocation.localPosition;
         
         MapAgentVisual visualScript = visualObj.GetComponent<MapAgentVisual>();
-        visualScript.Setup(agent,false); 
+        visualScript.Setup(agent, false); 
         
         visualScript.MoveTo(targetNode.transform.localPosition, () => 
         {
@@ -324,15 +416,14 @@ public class MapManager : MonoBehaviour
         else if (node.missionData.type == MissionType.Crisis)
         {
             Destroy(node.gameObject);
-            busyAgents.Remove(agent);
-
+            busyAgents.Remove(agent); 
+            
             if (!completedMissionsToday.Contains(node.missionData))
             {
                 completedMissionsToday.Add(node.missionData);
             }
             GameSession.SaveMapState(currentMoney, completedMissionsToday);
-           
-
+            
             CrisisManager.Instance.StartCrisis(node.missionData, agent);
         }
     }
@@ -355,7 +446,7 @@ public class MapManager : MonoBehaviour
         GameObject visualObj = Instantiate(agentVisualPrefab, mapContainer);
         visualObj.transform.localPosition = startPos;
         MapAgentVisual visualScript = visualObj.GetComponent<MapAgentVisual>();
-        visualScript.Setup(agent,true);
+        visualScript.Setup(agent, true);
 
         visualScript.MoveTo(headquartersLocation.localPosition, () => 
         {

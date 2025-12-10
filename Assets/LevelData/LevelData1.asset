@@ -1,0 +1,71 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3cff17b7b716a9a4b847eb553a53913d, type: 3}
+  m_Name: LevelData1
+  m_EditorClassIdentifier: Assembly-CSharp::LevelData
+  timeline:
+  - note: 
+    eventType: 4
+    waitDuration: 3
+    mission: {fileID: 0}
+    dialogue: {fileID: 0}
+    banterAgent: {fileID: 11400000, guid: c691e0ce8125ecf4b8fb1cfe9f406af2, type: 2}
+    banterText: "Hey Teneke! D\xFCn geceki Super Bowl ma\xE7\u0131n\u0131 izledin
+      mi"
+    altBanterAgent: {fileID: 0}
+    altBanterText: 
+  - note: 
+    eventType: 0
+    waitDuration: 4
+    mission: {fileID: 0}
+    dialogue: {fileID: 0}
+    banterAgent: {fileID: 0}
+    banterText: 
+    altBanterAgent: {fileID: 0}
+    altBanterText: 
+  - note: 
+    eventType: 4
+    waitDuration: 2
+    mission: {fileID: 0}
+    dialogue: {fileID: 0}
+    banterAgent: {fileID: 11400000, guid: 9b607ec8b1ec250478267cf32076015b, type: 2}
+    banterText: "Evrenin en zeki varl\u0131\u011F\u0131y\u0131m diyorsun ama insanlarin
+      birbirine \xE7arp\u0131p durdu\u011Fu o ilkel sporu mu izliyorsun?"
+    altBanterAgent: {fileID: 0}
+    altBanterText: 
+  - note: 
+    eventType: 1
+    waitDuration: 5
+    mission: {fileID: 11400000, guid: 928d451a1ba43284c9e6b8e41f67d586, type: 2}
+    dialogue: {fileID: 0}
+    banterAgent: {fileID: 0}
+    banterText: 
+    altBanterAgent: {fileID: 0}
+    altBanterText: 
+  - note: 
+    eventType: 1
+    waitDuration: 5
+    mission: {fileID: 11400000, guid: 928d451a1ba43284c9e6b8e41f67d586, type: 2}
+    dialogue: {fileID: 0}
+    banterAgent: {fileID: 0}
+    banterText: 
+    altBanterAgent: {fileID: 0}
+    altBanterText: 
+  - note: 
+    eventType: 1
+    waitDuration: 5
+    mission: {fileID: 11400000, guid: 928d451a1ba43284c9e6b8e41f67d586, type: 2}
+    dialogue: {fileID: 0}
+    banterAgent: {fileID: 0}
+    banterText: 
+    altBanterAgent: {fileID: 0}
+    altBanterText: 

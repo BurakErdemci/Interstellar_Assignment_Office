@@ -11,6 +11,7 @@ public class AgentData : ScriptableObject
     [Header("Progression")]
     public int currentXP = 0;
     public int xpToNextLevel = 100;
+    public int availableStatPoints = 0;
     [Header("Diyaloglar (Barks)")]
     public string[] selectionQuotes; // Seçilince ne der?
     public string[] travelQuotes;    // Yürürken ne der?
@@ -62,13 +63,28 @@ public class AgentData : ScriptableObject
     public void AddXP(int amount)
     {
         currentXP += amount;
-        if (currentXP >= xpToNextLevel)
+        
+        // Eğer seviye atlama sınırını geçtiyse
+        while (currentXP >= xpToNextLevel)
         {
             currentXP -= xpToNextLevel;
-            if (skills.Count > 0)
+            availableStatPoints++; // 1 Puan kazan
+
+            xpToNextLevel += 50; 
+        }
+    }
+    public void UpgradeStat(StatType type)
+    {
+        if (availableStatPoints > 0)
+        {
+            foreach (var skill in skills)
             {
-                var randomSkill = skills[Random.Range(0, skills.Count)];
-                if (randomSkill.value < 10) randomSkill.value++;
+                if (skill.type == type && skill.value < 10) // Max 10
+                {
+                    skill.value++;
+                    availableStatPoints--;
+                    return;
+                }
             }
         }
     }

@@ -19,7 +19,7 @@ MonoBehaviour:
   type: 0
   requirements:
   - stat: 0
-    minLevel: 4
+    minLevel: 3
   - stat: 3
     minLevel: 3
   difficultyLevel: 70

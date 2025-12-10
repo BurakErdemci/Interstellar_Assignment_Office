@@ -15,8 +15,9 @@ MonoBehaviour:
   agentName: Tiny
   description: "\xC7ok zeki ama 10 cm"
   faceIcon: {fileID: -4569389960118956255, guid: 626ddf540fe302244bbc507da5c9f508, type: 3}
-  currentXP: 60
-  xpToNextLevel: 100
+  currentXP: 0
+  xpToNextLevel: 150
+  availableStatPoints: 0
   selectionQuotes:
   - "Benden ba\u015Fkas\u0131n\u0131 nas\u0131l se\xE7ebilirsin ki ?"
   travelQuotes:
@@ -32,13 +33,13 @@ MonoBehaviour:
     - "Y\xFCkseklik korkum var ama hallederim.\", \"Kedi bana t\u0131slad\u0131 patron!"
   skills:
   - type: 0
-    value: 4
+    value: 7
   - type: 1
     value: 1
   - type: 2
     value: 3
   - type: 3
-    value: 5
+    value: 6
   - type: 4
     value: 2
   - type: 5
